@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Row Management System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/forms@0.4.0/dist/tailwindcss.forms.min.js"></script>
+<style>
+  .main-row {
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  .secondary-row {
+    font-size: 0.875rem;
+    color: gray;
+  }
+  .hidden {
+    display: none;
+  }
+</style>
+</head>
+<body class="bg-gray-50">
+<div class="min-h-screen flex flex-col items-center justify-center">
+  <div class="flex items-center space-x-8 mb-4">
+    <div id="rowDisplay" class="flex flex-col items-center space-y-2">
+      <!-- Placeholder for rows -->
+    </div>
+    <div id="rowStorage" class="overflow-y-auto h-48 w-48 border p-2">
+      <!-- Placeholder for all rows -->
+    </div>
+  </div>
+  <div class="fixed bottom-0 left-0 right-0 p-4 bg-white shadow-md">
+    <div class="flex items-center space-x-2">
+      <input id="textInput" type="text" placeholder="Enter row text" class="form-input w-full" />
+      <button id="upButton" class="p-2 bg-blue-500 text-white rounded">&uarr;</button>
+      <button id="downButton" class="p-2 bg-blue-500 text-white rounded">&darr;</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const rowDisplay = document.getElementById('rowDisplay');
+  const rowStorage = document.getElementById('rowStorage');
+  const textInput = document.getElementById('textInput');
+  const upButton = document.getElementById('upButton');
+  const downButton = document.getElementById('downButton');
+
+  let rows = [];
+  let mainRowIndex = -1;
+
+  function updateDisplay() {
+    rowDisplay.innerHTML = '';
+    rowStorage.innerHTML = '';
+
+    if (mainRowIndex >= 0) {
+      const aboveIndex = mainRowIndex - 1;
+      const belowIndex = mainRowIndex + 1;
+
+      if (rows[aboveIndex]) {
+        rowDisplay.appendChild(createRowElement(rows[aboveIndex], 'secondary-row', aboveIndex));
+      }
+
+      rowDisplay.appendChild(createRowElement(rows[mainRowIndex], 'main-row', mainRowIndex));
+
+      if (rows[belowIndex]) {
+        rowDisplay.appendChild(createRowElement(rows[belowIndex], 'secondary-row', belowIndex));
+      }
+    }
+
+    rows.forEach((row, index) => {
+      if (row) {
+        const storageRow = createRowElement(row, index === mainRowIndex ? 'main-row' : 'secondary-row', index);
+        rowStorage.appendChild(storageRow);
+      }
+    });
+  }
+
+  function createRowElement(text, className, index) {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = className;
+    rowDiv.textContent = text;
+
+    const deleteButton = document.createElement('button');
+    deleteButton.textContent = 'X';
+    deleteButton.className = 'ml-2 p-1 bg-red-500 text-white rounded';
+    deleteButton.onclick = () => deleteRow(index);
+
+    rowDiv.appendChild(deleteButton);
+
+    return rowDiv;
+  }
+
+  function deleteRow(index) {
+    rows.splice(index, 1);
+    if (index < mainRowIndex) {
+      mainRowIndex--;
+    }
+    updateDisplay();
+  }
+
+  textInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && textInput.value.trim()) {
+      rows.push(textInput.value.trim());
+      mainRowIndex = rows.length - 1;
+      textInput.value = '';
+      updateDisplay();
+    }
+  });
+
+  upButton.addEventListener('click', () => {
+    if (mainRowIndex > 0) {
+      mainRowIndex--;
+      updateDisplay();
+    }
+  });
+
+  downButton.addEventListener('click', () => {
+    if (mainRowIndex < rows.length - 1) {
+      mainRowIndex++;
+      updateDisplay();
+    }
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft' && mainRowIndex > 0) {
+      mainRowIndex--;
+      updateDisplay();
+    } else if (e.key === 'ArrowRight' && mainRowIndex < rows.length - 1) {
+      mainRowIndex++;
+      updateDisplay();
+    }
+  });
+
+  updateDisplay();
+</script>
+</body>
+</html>
