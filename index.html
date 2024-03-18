@@ -1,0 +1,116 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Row Management System</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/forms"></script>
+<style>
+  .main-row {
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  .secondary-row {
+    font-size: 0.875rem;
+    color: gray;
+  }
+</style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col">
+
+<div class="flex-grow overflow-hidden flex flex-col items-center justify-center">
+  <div id="rowDisplay" class="space-y-2">
+    <!-- Placeholder for rows -->
+  </div>
+</div>
+
+<div class="p-4 border-t bg-white">
+  <div class="flex gap-2">
+    <input id="textInput" type="text" placeholder="Enter text here" class="form-input flex-grow" />
+    <button id="upButton" class="p-2 bg-blue-500 text-white rounded">&uarr;</button>
+    <button id="downButton" class="p-2 bg-blue-500 text-white rounded">&darr;</button>
+  </div>
+</div>
+
+<div class="p-4 bg-white">
+  <div id="rowStorage" class="h-32 overflow-y-auto">
+    <!-- Placeholder for all rows -->
+  </div>
+</div>
+
+<script>
+  let rows = [];
+  let mainRowIndex = -1;
+
+  function updateDisplay() {
+    const rowDisplay = document.getElementById('rowDisplay');
+    const rowStorage = document.getElementById('rowStorage');
+    rowDisplay.innerHTML = '';
+    rowStorage.innerHTML = '';
+
+    rows.forEach((text, index) => {
+      const rowClass = index === mainRowIndex ? 'main-row' : 'secondary-row';
+      const rowElement = document.createElement('div');
+      rowElement.className = `flex items-center ${rowClass}`;
+      rowElement.innerHTML = `
+        <div class="flex-grow">${text}</div>
+        <button class="deleteButton p-1 bg-red-500 text-white rounded" data-index="${index}">&times;</button>
+      `;
+      if (index === mainRowIndex - 1 || index === mainRowIndex || index === mainRowIndex + 1) {
+        rowDisplay.appendChild(rowElement);
+      }
+      rowStorage.appendChild(rowElement.cloneNode(true));
+    });
+
+    document.querySelectorAll('.deleteButton').forEach(button => {
+      button.addEventListener('click', function() {
+        const index = parseInt(this.getAttribute('data-index'));
+        rows.splice(index, 1);
+        if (mainRowIndex >= index) {
+          mainRowIndex--;
+        }
+        updateDisplay();
+      });
+    });
+  }
+
+  document.getElementById('textInput').addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+      rows.push(this.value);
+      mainRowIndex = rows.length - 1;
+      this.value = '';
+      updateDisplay();
+    }
+  });
+
+  document.getElementById('upButton').addEventListener('click', function() {
+    if (mainRowIndex > 0) {
+      mainRowIndex--;
+      updateDisplay();
+    }
+  });
+
+  document.getElementById('downButton').addEventListener('click', function() {
+    if (mainRowIndex < rows.length - 1) {
+      mainRowIndex++;
+      updateDisplay();
+    }
+  });
+
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'ArrowUp' && mainRowIndex > 0) {
+      mainRowIndex--;
+      updateDisplay();
+    } else if (event.key === 'ArrowDown' && mainRowIndex < rows.length - 1) {
+      mainRowIndex++;
+      updateDisplay();
+    }
+  });
+
+  updateDisplay();
+</script>
+
+</body>
+</html>
